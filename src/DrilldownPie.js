@@ -17,22 +17,22 @@ function useDrillableData(data){
     const initialState = {
       renderData : data,
       stack: [],
-      startAngle:0
+      startAngle: 0
     };
-  return useReducer((state,action)=>{
+  return useReducer((state,action) => {
     switch(action.type){
       case "drilldown":
         return {
           renderData : state.renderData[action.index].children,
-          stack:[...state.stack, state.renderData],
-          startAngle: action.startAngle
+          stack:       [...state.stack, state.renderData],
+          startAngle:  action.startAngle
         };
       case "drillup":
         if(state.stack.length > 0 ){
           return {
-            renderData: state.stack.slice(-1)[0],
-            stack: state.stack.slice(0,-1),
-            startAngle:state.startAngle
+            renderData:  state.stack.slice(-1)[0],
+            stack:       state.stack.slice(0,-1),
+            startAngle:  state.startAngle
           };
         } else {
           return state;
@@ -43,41 +43,52 @@ function useDrillableData(data){
   },initialState);
 }
 
-const  Arc = ({arcData,onClick}) => {
-  const [radiusAdd,setRadiusAdd] = useState(0)
+
+const  Arc = ({ arcData , onClick }) => {
+  const [radiusAdd , setRadiusAdd] = useState(0)
+  const arc =  d3.arc().innerRadius(15 + radiusAdd/2 ).outerRadius(205 + radiusAdd);
 
   function mouseover(){
     setRadiusAdd(20)
   }
+
   function mouseout(){
     setRadiusAdd(0)
   }
 
-  const arc =  d3.arc().innerRadius(15 + radiusAdd/2 ).outerRadius(205 + radiusAdd);
 
-    return(<Path
-        d={arc(arcData)}
-        onClick={()=>onClick(arcData) }
-        color={arcData.data.color}
-        onMouseOver={mouseover}
-        onMouseOut={mouseout}    />);
+
+    return(<g>
+      <Path
+          d={arc(arcData)}
+          color={arcData.data.color}
+          onMouseOver={mouseover}
+          onMouseOut={mouseout}
+          onClick={()=>onClick(arcData)
+           }
+
+         />
+         </g>
+       );
 }
 
-const PieChart=({data,x,y})=>{
-  const [{renderData,startAngle},dispatch] = useDrillableData(data)
+const DrilldownPie=({data,x,y})=>{
+  const [{renderData, startAngle },dispatch] = useDrillableData(data)
   const [ percentVisible , setPercentVisible ] = useState(0)
   const pie = d3.pie()
                 .startAngle(startAngle)
                 .endAngle(startAngle + percentVisible * Math.PI * 2 )
-                .value(d=>d.value);
-  function drilldown({startAngle,index}){
+                .value(d => d.value);
+
+  function drilldown({ startAngle , index }){
       // setRenderData(renderData[index].children)
-      dispatch({ type:"drilldown" , index: startAngle })
+      console.log(startAngle)
+      dispatch({ type: "drilldown" , index, startAngle })
   }
 
   function drillup(){
 
-    dispatch({  type:"drillup" });
+    dispatch({  type: "drillup" });
 
   }
 
@@ -86,7 +97,7 @@ const PieChart=({data,x,y})=>{
       .transition("pie-reveal")
       .duration(3000)
       .ease(d3.easeSinInOut)
-      .tween("percentVisible",()=>{
+      .tween("percentVisible",() => {
         const percentInterpolate = d3.interpolate(0,100);
         return t => setPercentVisible(percentInterpolate(t))
       });
@@ -94,12 +105,12 @@ const PieChart=({data,x,y})=>{
   return(
     <g transform={`translate(${x},${y})`}>
       {
-        pie(renderData).map((d,i)=>(
-          <Arc arcData={d} key={i}  onClick={drilldown}  />
+        pie(renderData).map(d=>(
+          <Arc arcData={d} key={d.id}  onClick={drilldown}  />
         ))
       }
-      <circle cx={0} cy={0} fill="black" onClick={drillup} r={15}></circle>
+      <circle cx={0} cy={0} r={15} fill="black" onClick={drillup} ></circle>
     </g>
   )
 }
-export default PieChart;
+export default DrilldownPie;
