@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "chroma-js": "^2.1.0",
     "d3": "^5.14.2",
     "faker": "^4.1.0",
     "react": "^16.12.0",

@@ -1,15 +1,22 @@
 import React from 'react';
 import './index.css';
+import chorma from 'chroma-js'
 import PieChart from './PieChart';
 import * as d3 from 'd3';
 import faker from 'faker'
-function genrateData(level){
+function genrateData(level,prevIndex,color){
   let N = d3.randomUniform(1,10)()
+  const colors = color ? d3.range(N).map(i =>chorma(color).brighten(i * 0.1).hex()):d3.schemePaired
+
   return d3.range(N).map(i => ({
-    value: Math.abs(d3.randomNormal()()),
+       value: Math.abs(d3.randomNormal()()),
        id: `${level}-${i}`,
+       level:level,
+       index:i,
+       prevIndex:prevIndex,
        name: faker.internet.userName(),
-    children: level > 0 ?  genrateData(level - 1 ) : []
+       color:colors[i],
+       children: level > 0 ?  genrateData(level - 1 ) : []
   }))
 }
 function App(){
